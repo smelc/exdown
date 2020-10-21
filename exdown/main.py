@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+
+import sys
+
 def extract(f, *args, **kwargs):
     with open(f, "r") as handle:
         return from_buffer(handle, *args, **kwargs)
@@ -48,3 +52,17 @@ def from_buffer(f, max_num_lines=10000, syntax_filter=None):
         previous_line = line
 
     return out
+
+
+def main():
+    if len(sys.argv) == 1:
+        print("Expecting a file as first argument", file=sys.stderr)
+        sys.exit(1)
+    f = sys.argv[1]
+    # print(f"Extracting {f}")
+    out = extract(f)
+    code = [p[0] for p in out]
+    print("\n".join(code))
+
+if __name__ == "__main__":
+    main()
