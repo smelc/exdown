@@ -58,11 +58,10 @@ def main():
     if len(sys.argv) == 1:
         print("Expecting a file as first argument", file=sys.stderr)
         sys.exit(1)
-    f = sys.argv[1]
-    # print(f"Extracting {f}")
-    out = extract(f)
-    code = [p[0] for p in out]
-    print("\n".join(code))
+    for f in sys.argv[1:]:
+        out = extract(f)
+        code = [p[0] for p in out]
+        print("\n".join(code))
 
 if __name__ == "__main__":
     main()
