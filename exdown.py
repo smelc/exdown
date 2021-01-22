@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument("FILE", help="the file to parse", type=str)
-PARSER.add_argument("-x", "--exec", help="command to execute on each snippet (split on spaces)",
+PARSER.add_argument("-x", "--exec", help="command to execute on each snippet (split on spaces). Must expect a [FILE] afterwards.",
                     type=str)
 ARGS = PARSER.parse_args()
 
@@ -67,9 +67,9 @@ def from_buffer(f, max_num_lines=10000, syntax_filter=None)\
     return out
 
 
-def _exec(snippet: str, ext: Optional[str]):
+def _exec(snippet: str, lineno: int, ext: Optional[str]):
     ext = ("." + ext) if ext else None
-    with tempfile.NamedTemporaryFile(prefix='exdown_', suffix=ext, delete=False) as tmp_file:
+    with tempfile.NamedTemporaryFile(prefix='exdown_', suffix=ext) as tmp_file:
         print(snippet)
         tmp_file.write(snippet.encode('utf-8'))
         tmp_file.flush()
@@ -80,6 +80,7 @@ def _exec(snippet: str, ext: Optional[str]):
                                 stderr=sys.stderr, stdout=sys.stdout)
         rc = result.returncode
         if rc != 0:
+            print(f"{ARGS.FILE}:{lineno} exdown snippet ERROR")
             sys.exit(rc)
 
 def main():
@@ -88,7 +89,7 @@ def main():
         for p in out:
             code_str = p[0]
             if ARGS.exec:
-                _exec(code_str, p[2])
+                _exec(code_str, p[1], p[2])
             else: # print snippet
                 print(code_str)
 
