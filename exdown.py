@@ -1,13 +1,26 @@
 #!/usr/bin/python3
 
+import argparse
+import subprocess
+import tempfile
 import sys
+from typing import List, Optional, Tuple
+
+PARSER = argparse.ArgumentParser()
+PARSER.add_argument("FILE", help="the file to parse", type=str)
+PARSER.add_argument("-x", "--exec", help="command to execute on each snippet (split on spaces)",
+                    type=str)
+ARGS = PARSER.parse_args()
 
 def extract(f, *args, **kwargs):
     with open(f, "r") as handle:
         return from_buffer(handle, *args, **kwargs)
 
 
-def from_buffer(f, max_num_lines=10000, syntax_filter=None):
+def from_buffer(f, max_num_lines=10000, syntax_filter=None)\
+    -> List[Tuple[str, int, Optional[str]]]:
+    """ returns the list of snippet. Each snippet comes
+        with its starting line number and its extension (if any) """
     out = []
     previous_line = None
     k = 1
@@ -20,7 +33,7 @@ def from_buffer(f, max_num_lines=10000, syntax_filter=None):
             break
 
         if line.lstrip()[:3] == "```":
-            syntax = line.lstrip()[3:]
+            syntax = line.strip()[3:]
             num_leading_spaces = len(line) - len(line.lstrip())
             lineno = k - 1
             # read the block
@@ -47,21 +60,37 @@ def from_buffer(f, max_num_lines=10000, syntax_filter=None):
             if previous_line.strip() == "<!-- exdown-skip -->":
                 continue
 
-            out.append(("".join(code_block), lineno))
+            out.append(("".join(code_block), lineno, syntax))
 
         previous_line = line
 
     return out
 
 
+def _exec(snippet: str, ext: Optional[str]):
+    ext = ("." + ext) if ext else None
+    with tempfile.NamedTemporaryFile(prefix='exdown_', suffix=ext, delete=False) as tmp_file:
+        print(snippet)
+        tmp_file.write(snippet.encode('utf-8'))
+        tmp_file.flush()
+        cmd = ARGS.exec.split(" ") + [tmp_file.name]
+        # cmd_str = " ".join(cmd)
+        # print(f"> {cmd_str}")
+        result = subprocess.run(cmd, check=False,
+                                stderr=sys.stderr, stdout=sys.stdout)
+        rc = result.returncode
+        if rc != 0:
+            sys.exit(rc)
+
 def main():
-    if len(sys.argv) == 1:
-        print("Expecting a file as first argument", file=sys.stderr)
-        sys.exit(1)
-    for f in sys.argv[1:]:
+    for f in [ARGS.FILE]:
         out = extract(f)
-        code = [p[0] for p in out]
-        print("\n".join(code))
+        for p in out:
+            code_str = p[0]
+            if ARGS.exec:
+                _exec(code_str, p[2])
+            else: # print snippet
+                print(code_str)
 
 if __name__ == "__main__":
     main()
