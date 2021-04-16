@@ -11,3 +11,6 @@ jobs:
       - uses: psf/black@stable
         with:
           args: ". --check"
+      - uses: jpetrucciani/mypy-check@master
+        with:
+          path: '.'

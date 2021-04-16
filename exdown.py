@@ -63,7 +63,7 @@ def from_buffer(
 
             if syntax_filter and syntax_filter.strip() != syntax.strip():
                 continue
-            if previous_line.strip() == "<!-- exdown-skip -->":
+            if previous_line and previous_line.strip() == "<!-- exdown-skip -->":
                 continue
 
             out.append(("".join(code_block), lineno, syntax))
