@@ -8,19 +8,25 @@ from typing import List, Optional, Tuple
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument("FILE", help="the file to parse", type=str)
-PARSER.add_argument("-x", "--exec", help="command to execute on each snippet (split on spaces). Must expect a [FILE] afterwards.",
-                    type=str)
+PARSER.add_argument(
+    "-x",
+    "--exec",
+    help="command to execute on each snippet (split on spaces). Must expect a [FILE] afterwards.",
+    type=str,
+)
 ARGS = PARSER.parse_args()
+
 
 def extract(f, *args, **kwargs):
     with open(f, "r") as handle:
         return from_buffer(handle, *args, **kwargs)
 
 
-def from_buffer(f, max_num_lines=10000, syntax_filter=None)\
-    -> List[Tuple[str, int, Optional[str]]]:
-    """ returns the list of snippet. Each snippet comes
-        with its starting line number and its extension (if any) """
+def from_buffer(
+    f, max_num_lines=10000, syntax_filter=None
+) -> List[Tuple[str, int, Optional[str]]]:
+    """returns the list of snippet. Each snippet comes
+    with its starting line number and its extension (if any)"""
     out = []
     previous_line = None
     k = 1
@@ -69,19 +75,19 @@ def from_buffer(f, max_num_lines=10000, syntax_filter=None)\
 
 def _exec(snippet: str, lineno: int, ext: Optional[str]):
     ext = ("." + ext) if ext else None
-    with tempfile.NamedTemporaryFile(prefix='exdown_', suffix=ext) as tmp_file:
+    with tempfile.NamedTemporaryFile(prefix="exdown_", suffix=ext) as tmp_file:
         print(snippet)
-        tmp_file.write(snippet.encode('utf-8'))
+        tmp_file.write(snippet.encode("utf-8"))
         tmp_file.flush()
         cmd = ARGS.exec.split(" ") + [tmp_file.name]
         # cmd_str = " ".join(cmd)
         # print(f"> {cmd_str}")
-        result = subprocess.run(cmd, check=False,
-                                stderr=sys.stderr, stdout=sys.stdout)
+        result = subprocess.run(cmd, check=False, stderr=sys.stderr, stdout=sys.stdout)
         rc = result.returncode
         if rc != 0:
             print(f"{ARGS.FILE}:{lineno} exdown snippet ERROR")
             sys.exit(rc)
+
 
 def main():
     for f in [ARGS.FILE]:
@@ -90,8 +96,9 @@ def main():
             code_str = p[0]
             if ARGS.exec:
                 _exec(code_str, p[1], p[2])
-            else: # print snippet
+            else:  # print snippet
                 print(code_str)
+
 
 if __name__ == "__main__":
     main()

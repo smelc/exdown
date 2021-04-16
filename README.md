@@ -1,3 +1,5 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 Stripped down version of the
 [official exdown](https://github.com/nschloe/exdown/). The main difference
 is that in this fork,
