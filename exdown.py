@@ -9,9 +9,15 @@ from typing import List, Optional, Tuple
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument("FILE", help="the file to parse", type=str)
 PARSER.add_argument(
+    "-f",
+    "--focus",
+    help="the only extension to consider. I.e. if interested in ```ocaml ...``` blocks, pass -f ocaml",
+    type=str,
+)
+PARSER.add_argument(
     "-x",
     "--exec",
-    help="command to execute on each snippet (split on spaces). Must expect a [FILE] afterwards.",
+    help="command to execute on each snippet (split on spaces)",
     type=str,
 )
 ARGS = PARSER.parse_args()
@@ -23,7 +29,7 @@ def extract(f, *args, **kwargs):
 
 
 def from_buffer(
-    f, max_num_lines=10000, syntax_filter=None
+    f, max_num_lines=10000, focus=None
 ) -> List[Tuple[str, int, Optional[str]]]:
     """returns the list of snippet. Each snippet comes
     with its starting line number and its extension (if any)"""
@@ -61,7 +67,7 @@ def from_buffer(
                 line = line[nls:]
                 code_block.append(line)
 
-            if syntax_filter and syntax_filter.strip() != syntax.strip():
+            if focus and focus != syntax.strip():
                 continue
             if previous_line and previous_line.strip() == "<!-- exdown-skip -->":
                 continue
@@ -91,7 +97,7 @@ def _exec(snippet: str, lineno: int, ext: Optional[str]):
 
 def main():
     for f in [ARGS.FILE]:
-        out = extract(f)
+        out = extract(f, focus=ARGS.focus)
         for p in out:
             code_str = p[0]
             if ARGS.exec:

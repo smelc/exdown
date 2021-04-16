@@ -5,21 +5,26 @@ Stripped down version of the
 [official exdown](https://github.com/nschloe/exdown/). The main difference
 is that in this fork,
 [exdown.py](https://github.com/smelc/exdown/blob/master/exdown.py)
-is a standalone main. In addition it supports the `-x/--exec` flag.
+is a standalone main. In addition it supports the following options:
+
+* `-f/--focus` to only consider snippets of the given extension
+* `-x/--exec` to execute a command on each snippet
 
 The `exdown.py` scripts extracts code snippets from markdown files.
 
 # Usage
 
 ```bash
-usage: exdown.py [-h] [-x EXEC] FILE
+usage: exdown.py [-h] [-f FOCUS] [-x EXEC] FILE
 
 positional arguments:
   FILE                  the file to parse
 
 optional arguments:
   -h, --help            show this help message and exit
-  -x EXEC, --exec EXEC  command to execute on each snippet (split on spaces). Must expect a [FILE] afterwards.
+  -f FOCUS, --focus FOCUS
+                        the only extension to consider. I.e. if interested in ```ocaml ...``` blocks, pass -f ocaml
+  -x EXEC, --exec EXEC  command to execute on each snippet (split on spaces).
 ```
 
 To ignore a snippet, add the following line before it:
@@ -46,7 +51,7 @@ to check the syntax of each json snippet in a file, execute
 a temporary file and `jq . tmp_file` to be executed. If a call fails,
 `exdown.py` stops.
 
-# Example: live executing Ocaml markdown snippets
+## Example: live executing Ocaml markdown snippets
 
 Automatically send `ocaml` snippets to [utop](https://opam.ocaml.org/packages/utop/)
 upon changes to the markdown file:
@@ -55,7 +60,7 @@ upon changes to the markdown file:
 echo file.md | entr -s 'exdown.py file.md | utop -stdin'
 ```
 
-# Example: live checking that json snippets are well-formed
+## Example: live checking that json snippets are well-formed
 
 ```
 echo file.md | entr -s 'exdown.py -x "jq ." file.md'
