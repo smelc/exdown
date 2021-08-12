@@ -33,6 +33,13 @@ To ignore a snippet, add the following line before it:
 <!-- exdown-skip -->
 ```
 
+To ignore lines within a snippet, add the following line before it. For
+example to skip the first and the second line, do:
+
+```html
+<!-- exdown-skip 1 2 -->
+```
+
 Tip: to run a snippet that is not shown in your output document, put
 it in html comments:
 

@@ -28,6 +28,38 @@ def extract(f, *args, **kwargs):
         return from_buffer(handle, *args, **kwargs)
 
 
+def parse_skip(line) -> Optional[List[int]]:
+    """Returns None if the line is not a exdown-skip statement
+    Otherwise returns the lines to skip (numbering starts at 1).
+    The empty list indicates that the whole block must be skipped."""
+    prefix = "<!-- exdown-skip"
+    line = line.lstrip()
+    if not line.startswith(prefix):
+        return None
+    suffix = line[len(prefix) :]
+    skipped_lines = []
+    for nb_line in suffix.lstrip().split(" "):  # Parse to the right of exdown-skip
+        try:
+            nb_line = int(nb_line)
+            if nb_line < 1:
+                raise Exception(
+                    f"Line numbers in exdown-skip start at 1, but received {nb_line}"
+                )
+            skipped_lines.append(nb_line)
+        except ValueError as _:
+            break
+    return skipped_lines
+
+
+# Inline tests, to KISS
+assert parse_skip("") is None
+assert parse_skip("foobar") is None
+assert parse_skip("<!-- exdown-skip -->") == []
+assert parse_skip("<!-- exdown-skip 1-->") == []
+assert parse_skip("<!-- exdown-skip 3 -->") == [3]
+assert parse_skip("<!-- exdown-skip 1 2 2048 -->") == [1, 2, 2048]
+
+
 def from_buffer(
     f, max_num_lines=10000, focus=None
 ) -> List[Tuple[str, int, Optional[str]]]:
@@ -69,8 +101,19 @@ def from_buffer(
 
             if focus and focus != syntax.strip():
                 continue
-            if previous_line and previous_line.strip() == "<!-- exdown-skip -->":
-                continue
+            skip = parse_skip(previous_line) if previous_line else None
+            if skip is None:
+                pass  # Do not skip
+            elif skip == []:
+                continue  # Skip everything
+            else:
+                # Skip only selected lines. Remove lines starting by
+                # the ones with the highest number (sorted(..).reverse()).
+                # -1 because lines in exdown-skip stanzas start at 1
+                skip = sorted(skip)
+                skip.reverse()
+                for skipped_line in skip:
+                    code_block.pop(skipped_line - 1)
 
             out.append(("".join(code_block), lineno, syntax))
 
