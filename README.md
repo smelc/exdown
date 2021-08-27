@@ -27,10 +27,11 @@ optional arguments:
   -x EXEC, --exec EXEC  command to execute on each snippet (split on spaces).
 ```
 
-To ignore a snippet, add the following line before it:
+To ignore a snippet, add a line containing `exdown-skip` before it, such as:
 
 ```html
 <!-- exdown-skip -->
+[//]: #exdown-skip         <- works too
 ```
 
 To ignore lines within a snippet, add the following line before it. For
@@ -38,6 +39,7 @@ example to skip the first and the second line, do:
 
 ```html
 <!-- exdown-skip 1 2 -->
+[//]: #exdown-skip 1  2    <- works too
 ```
 
 Tip: to run a snippet that is not shown in your output document, put

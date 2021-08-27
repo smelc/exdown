@@ -32,18 +32,19 @@ def parse_skip(line) -> Optional[List[int]]:
     """Returns None if the line is not a exdown-skip statement
     Otherwise returns the lines to skip (numbering starts at 1).
     The empty list indicates that the whole block must be skipped."""
-    prefix = "<!-- exdown-skip"
     line = line.lstrip()
-    if not line.startswith(prefix):
+    searched = "exdown-skip"
+    idx = line.find(searched)
+    if idx < 0:
         return None
-    suffix = line[len(prefix) :]
+    suffix = line[idx + len(searched) :]
     skipped_lines = []
     for nb_line in suffix.lstrip().split(" "):  # Parse to the right of exdown-skip
         try:
             nb_line = int(nb_line)
             if nb_line < 1:
                 raise Exception(
-                    f"Line numbers in exdown-skip start at 1, but received {nb_line}"
+                    f"Line numbers in {searched} start at 1, but received {nb_line}"
                 )
             skipped_lines.append(nb_line)
         except ValueError as _:
@@ -55,8 +56,15 @@ def parse_skip(line) -> Optional[List[int]]:
 assert parse_skip("") is None
 assert parse_skip("foobar") is None
 assert parse_skip("<!-- exdown-skip -->") == []
+assert parse_skip("<!-- exdown-skip") == []
+assert parse_skip("whatever exdown-skip") == []
+assert (
+    parse_skip("[//]: #exdown-skip") == []
+)  # comments in https://github.com/gnab/remark/wiki/Markdown#empty-link
 assert parse_skip("<!-- exdown-skip 1-->") == []
+assert parse_skip("// exdown-skip 1-->") == []
 assert parse_skip("<!-- exdown-skip 3 -->") == [3]
+assert parse_skip("// exdown-skip 3 -->") == [3]
 assert parse_skip("<!-- exdown-skip 1 2 2048 -->") == [1, 2, 2048]
 
 
