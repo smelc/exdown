@@ -109,7 +109,9 @@ def from_buffer(
 
             if focus and focus != syntax.strip():
                 continue
-            skip: Optional[list[int]] = parse_skip(previous_line) if previous_line else None
+            skip: Optional[list[int]] = (
+                parse_skip(previous_line) if previous_line else None
+            )
             if skip is None:
                 pass  # Do not skip
             elif skip == []:

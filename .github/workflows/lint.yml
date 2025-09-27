@@ -13,7 +13,7 @@ jobs:
           python-version: '3.10'
       - uses: psf/black@stable
         with:
-          args: ". --check"
+          options: ". --check"
           version: "25.9.0"
       - uses: jpetrucciani/mypy-check@master
         with:
