@@ -121,7 +121,14 @@ def from_buffer(
                 skip = sorted(skip)
                 skip.reverse()
                 for skipped_line in skip:
-                    code_block.pop(skipped_line - 1)
+                    try:
+                        code_block.pop(skipped_line - 1)
+                    except IndexError:
+                        print(
+                            f"cannot skip line {skipped_line} in exdown block above at line {lineno} (only {len(code_block)} lines)",
+                            file=sys.stderr,
+                        )
+                        sys.exit(1)
 
             out.append(("".join(code_block), lineno, syntax))
 
